@@ -28,7 +28,7 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 
-	"github.com/rebeccapanel/rebecca/tools/pgsync/syncer"
+	"github.com/ali-ar1/pgsync/syncer"
 )
 
 const (

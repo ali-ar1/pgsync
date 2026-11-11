@@ -5,7 +5,7 @@
 #   bash install.sh uninstall  stop and remove the service (keeps settings + database)
 set -euo pipefail
 
-REPO="${PGSYNC_REPO:-ali-ar1/Rebecca}"
+REPO="${PGSYNC_REPO:-ali-ar1/pgsync}"
 TAG="${PGSYNC_TAG:-pgsync}"
 DIR="/opt/pgsync"
 BIN="$DIR/pgsync"
