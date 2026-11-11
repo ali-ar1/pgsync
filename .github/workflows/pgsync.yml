@@ -20,6 +20,11 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Tidy modules
+        run: |
+          go mod tidy
+          git diff --stat go.mod go.sum || true
+
       - name: Test
         run: go test -race ./...
 
