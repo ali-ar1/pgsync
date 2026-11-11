@@ -1,6 +1,6 @@
 module github.com/ali-ar1/pgsync
 
-go 1.24
+go 1.25.0
 
 require github.com/go-sql-driver/mysql v1.10.0
 
