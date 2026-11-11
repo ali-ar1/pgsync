@@ -1,0 +1,48 @@
+name: pgsync
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+    paths:
+      - "tools/pgsync/**"
+      - ".github/workflows/pgsync.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Test
+        run: go test -race ./tools/pgsync/...
+
+      - name: Build
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          for arch in amd64 arm64; do
+            CGO_ENABLED=0 GOOS=linux GOARCH="$arch" go build -trimpath -buildvcs=false -ldflags="-s -w" \
+              -o "dist/pgsync-linux-$arch" ./tools/pgsync
+          done
+          cp tools/pgsync/install.sh dist/install.sh
+
+      - name: Publish release "pgsync"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if ! gh release view pgsync >/dev/null 2>&1; then
+            gh release create pgsync --target "$GITHUB_SHA" --title "pgsync" \
+              --notes "Rebecca -> PasarGuard sync. Install: bash <(curl -fsSL https://github.com/${GITHUB_REPOSITORY}/releases/download/pgsync/install.sh)"
+          fi
+          gh release upload pgsync dist/* --clobber
