@@ -207,7 +207,10 @@ func (e *Engine) RunOnce(ctx context.Context) (Stats, error) {
 		}
 
 		if t.panel == nil {
-			if strings.EqualFold(rb.Status, "deleted") {
+			// Only active (or on_hold) Rebecca users get a PasarGuard account;
+			// an inactive one is created later, on the first cycle after it
+			// becomes active again.
+			if !rb.Active() {
 				continue
 			}
 			e.mu.Lock()

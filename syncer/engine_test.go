@@ -409,13 +409,24 @@ func TestDeletedRebeccaRowDisablesPanelUser(t *testing.T) {
 	}
 }
 
-func TestDisabledRebeccaUserIsCreatedThenDisabled(t *testing.T) {
-	u := alice()
-	u.Status = "limited"
-	e := newEnv(t, u)
-	e.run(t)
-	if got := e.panel.byName("alice"); got == nil || got.Status != "disabled" {
-		t.Fatalf("got %+v", got)
+func TestInactiveRebeccaUserIsNotCreatedUntilActive(t *testing.T) {
+	for _, status := range []string{"limited", "expired", "disabled", "deleted"} {
+		u := alice()
+		u.Status = status
+		e := newEnv(t, u)
+		stats := e.run(t)
+		if stats.Created != 0 || len(e.panel.creates) != 0 || len(e.state.rows) != 0 {
+			t.Fatalf("%s user was created: stats=%+v", status, stats)
+		}
+		if status == "deleted" {
+			continue
+		}
+		e.rebecca.users[1].Status = "active" // renewed / reset / enabled in Rebecca
+		stats = e.run(t)
+		got := e.panel.byName("alice")
+		if stats.Created != 1 || got == nil || got.Status != "active" || got.VlessID != uuidA {
+			t.Fatalf("%s -> active: not created: stats=%+v user=%+v", status, stats, got)
+		}
 	}
 }
 
